@@ -40,7 +40,7 @@ Add ``debug_toolbar_user_switcher.panels.UserPanel`` to ``DEBUG_TOOLBAR_PANELS``
 from django import VERSION
 from django.conf import settings
 from django.http import HttpResponseForbidden
-from django.conf.urls import url
+from django.urls import path
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
@@ -113,11 +113,11 @@ class UserPanel(Panel):
     @classmethod
     def get_urls(cls):
         return (
-            url(r"^users/login/$", views.login_form, name="debug-userpanel-login-form"),
-            url(
-                r"^users/login/(?P<pk>-?\d+)$",
+            path("users/login/", views.login_form, name="debug-userpanel-login-form"),
+            path(
+                "users/login/<uuid:pk>",
                 views.login,
                 name="debug-userpanel-login",
             ),
-            url(r"^users/logout$", views.logout, name="debug-userpanel-logout"),
+            path("users/logout", views.logout, name="debug-userpanel-logout"),
         )
