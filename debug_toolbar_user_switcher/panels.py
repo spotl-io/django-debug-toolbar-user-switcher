@@ -98,7 +98,7 @@ class UserPanel(Panel):
                 "user": self.request.user,
                 "form": UserForm(),
                 "next": self.request.GET.get("next"),
-                "users": get_user_model().objects.order_by("-last_login")[:10],
+                "users": get_user_model().objects.order_by("-last_login")[:20],
                 "current": current,
             },
         )
