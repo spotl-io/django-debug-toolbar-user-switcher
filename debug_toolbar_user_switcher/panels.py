@@ -75,40 +75,39 @@ class UserPanel(Panel):
 
     @property
     def nav_subtitle(self):
-        return self.is_authenticated(self.request) and self.request.user
+        return self.get_stats().get("username", "")
 
     @property
     def content(self):
         if not getattr(settings, "DEBUG_TOOLBAR_USER_DEBUG", settings.DEBUG):
             return HttpResponseForbidden()
 
+        return render_to_string(
+            self.template, {**self.get_stats(), "form": UserForm()}
+        )
+
+    def generate_stats(self, request, response):
+        user = request.user
         current = []
 
-        if self.is_authenticated(self.request):
+        if user.is_authenticated:
             for field in get_user_model()._meta.fields:
                 if field.name == "password":
                     continue
-                current.append(
-                    (field.attname, getattr(self.request.user, field.attname))
-                )
+                current.append((field.attname, str(getattr(user, field.attname))))
 
-        return render_to_string(
-            self.template,
+        self.record_stats(
             {
-                "user": self.request.user,
-                "form": UserForm(),
-                "next": self.request.GET.get("next"),
-                "users": get_user_model().objects.order_by("-last_login")[:20],
+                "is_authenticated": user.is_authenticated,
+                "username": str(user) if user.is_authenticated else "",
                 "current": current,
-            },
+                "next": request.GET.get("next"),
+                "users": [
+                    (str(u.pk), str(u))
+                    for u in get_user_model().objects.order_by("-last_login")[:20]
+                ],
+            }
         )
-
-    def is_authenticated(self, request):
-        return request.user.is_authenticated
-
-    def process_request(self, request):
-        self.request = request
-        return self.get_response(request)
 
     @classmethod
     def get_urls(cls):
